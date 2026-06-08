@@ -59,12 +59,29 @@ export default async (req) => {
     });
     const xml = await r.text();
 
-    const clean = s => (s || '')
-      .replace(/<[^>]+>/g, '')
-      .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
-      .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(+d))
-      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'")
-      .trim();
+    const clean = s => {
+      let t = (s || '');
+      // Strip HTML tags — loop until stable (handles broken/nested tags)
+      let prev;
+      do { prev = t; t = t.replace(/<[^>]*>/g, ''); } while (t !== prev);
+      // Decode numeric entities
+      t = t.replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+      t = t.replace(/&#(\d+);/g, (_, d) => String.fromCharCode(+d));
+      // Decode named entities
+      t = t.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+           .replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+           .replace(/&ldquo;/g, '“').replace(/&rdquo;/g, '”')
+           .replace(/&lsquo;/g, '‘').replace(/&rsquo;/g, '’')
+           .replace(/&ndash;/g, '–').replace(/&mdash;/g, '—')
+           .replace(/&nbsp;/g, ' ').replace(/&hellip;/g, '…');
+      // Truncate long descriptions to a clean sentence-ish length
+      t = t.trim();
+      if (t.length > 220) {
+        const cut = t.lastIndexOf(' ', 220);
+        t = t.slice(0, cut > 100 ? cut : 220) + '…';
+      }
+      return t;
+    };
 
     const getTag = (block, tag) => {
       let m = block.match(new RegExp(`<${tag}[^>]*>\\s*<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>\\s*<\\/${tag}>`));
