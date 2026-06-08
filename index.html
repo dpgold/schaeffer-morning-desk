@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<!-- Schaeffer Morning Desk v1.0.0 — health care news briefing -->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Schaeffer Morning Desk</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --paper: #f4f1e8;
+    --paper-2: #ece7d8;
+    --ink: #1a1714;
+    --ink-soft: #4a443c;
+    --ink-faint: #8a8275;
+    --rule: #cdc6b4;
+    --red: #990000;
+    --shadow: 0 1px 0 rgba(26,23,20,.04), 0 12px 30px -18px rgba(26,23,20,.45);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background:
+      radial-gradient(120% 80% at 50% -10%, #fbf9f2 0%, var(--paper) 55%) fixed,
+      var(--paper);
+    color: var(--ink);
+    font-family: "Newsreader", Georgia, serif;
+    font-size: 17px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    padding: clamp(14px, 3vw, 40px);
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    opacity: .035; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; }
+
+  /* ---------- Masthead ---------- */
+  header.masthead { text-align: center; padding-bottom: 10px; }
+  .kicker {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: .34em;
+    text-transform: uppercase; color: var(--red); font-weight: 600;
+  }
+  h1.title {
+    font-family: "Fraunces", serif; font-weight: 900; font-size: clamp(36px, 7vw, 68px);
+    line-height: .92; margin: 6px 0 4px; letter-spacing: -.01em;
+  }
+  .dateline {
+    display: flex; align-items: center;
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-soft);
+    border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink);
+    padding: 7px 0; margin-top: 10px;
+  }
+  .dateline-left  { flex: 1; display: flex; align-items: center; gap: 10px; }
+  .dateline-center { flex: 0 0 auto; text-align: center; }
+  .dateline-right { flex: 1; display: flex; justify-content: flex-end; }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; margin: 16px 0 6px; }
+  button {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: .08em;
+    text-transform: uppercase; cursor: pointer; border: 1.5px solid var(--ink);
+    background: var(--ink); color: var(--paper); padding: 9px 16px; border-radius: 2px;
+    transition: transform .12s ease, background .15s ease, color .15s ease;
+  }
+  button:hover { transform: translateY(-1px); }
+  button.ghost { background: transparent; color: var(--ink); }
+  button.ghost:hover { background: var(--paper-2); }
+  button:disabled { opacity: .45; cursor: wait; transform: none; }
+
+  /* ---------- Columns grid ---------- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 0; border-top: 3px double var(--ink); margin-top: 18px; }
+  .col { padding: 16px 18px 22px; border-bottom: 1px solid var(--rule); border-right: 1px solid var(--rule); position: relative; animation: rise .5s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+  .col h2 {
+    font-family: "Fraunces", serif; font-weight: 600; font-size: 22px; margin: 0 0 2px;
+    line-height: 1.05; display: flex; align-items: center; gap: 8px;
+  }
+  .col .src-rule { height: 2px; background: var(--ink); margin: 8px 0 12px; }
+  .src-title-link { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+  .src-title-link:hover { text-decoration: underline; text-decoration-color: var(--red); text-underline-offset: 3px; }
+  .src-logo { width: 18px; height: 18px; border-radius: 3px; flex-shrink: 0; }
+  .piece { padding: 10px 0; border-top: 1px solid var(--rule); }
+  .piece:first-of-type { border-top: none; }
+  .piece a { color: var(--ink); text-decoration: none; }
+  .ph { font-family: "Fraunces", serif; font-weight: 600; font-size: 18px; line-height: 1.2; display: block; color: inherit; text-decoration: none; }
+  a.ph:hover { text-decoration: underline; text-decoration-color: var(--red); text-underline-offset: 3px; cursor: pointer; }
+  .pa { font-style: italic; color: #243b53; font-size: 14px; margin-top: 3px; }
+  .ps { color: var(--ink-soft); font-size: 14.5px; margin-top: 4px; }
+  .pmeta { font-family: "IBM Plex Mono", monospace; font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin-top: 6px; }
+
+  .status { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--ink-faint); padding: 6px 0; }
+  .skeleton { height: 12px; background: linear-gradient(90deg, var(--paper-2) 25%, #e2dcca 37%, var(--paper-2) 63%); background-size: 400% 100%; animation: sh 1.3s ease infinite; border-radius: 2px; margin: 8px 0; }
+  .skeleton.t { height: 18px; width: 85%; } .skeleton.s { width: 95%; } .skeleton.s2 { width: 70%; }
+  @keyframes sh { 0%{background-position:100% 0} 100%{background-position:0 0} }
+  .err { color: var(--red); font-family: "IBM Plex Mono", monospace; font-size: 12px; line-height:1.4; }
+
+  /* ---------- Settings panel ---------- */
+  .panel { border: 1.5px solid var(--ink); border-radius: 3px; background: var(--paper-2); padding: 16px; margin: 12px 0; display: none; box-shadow: var(--shadow); }
+  .panel.open { display: block; animation: rise .3s ease both; }
+  .panel h3 { font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; margin: 0 0 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; background: var(--paper); border: 1px solid var(--rule); padding: 6px 8px 6px 12px; border-radius: 20px; font-size: 14px; }
+  .chip button { background: transparent; color: var(--ink-faint); border: none; padding: 0 2px; font-size: 15px; letter-spacing: 0; }
+  .chip button:hover { color: var(--red); }
+  .addrow { display: flex; gap: 8px; }
+  .addrow input { flex: 1; font-family: "Newsreader", serif; font-size: 15px; padding: 9px 12px; border: 1.5px solid var(--ink); border-radius: 2px; background: var(--paper); color: var(--ink); }
+  .addrow input:focus { outline: 2px solid var(--red); outline-offset: 1px; }
+  .addrow select { font-family: "IBM Plex Mono", monospace; font-size: 12px; padding: 9px 10px; border: 1.5px solid var(--ink); border-radius: 2px; background: var(--paper); color: var(--ink); cursor: pointer; }
+  .feed-table { width: 100%; border-collapse: collapse; font-family: "IBM Plex Mono", monospace; font-size: 11px; margin-top: 6px; }
+  .feed-table th { text-align: left; text-transform: uppercase; letter-spacing: .1em; color: #888; border-bottom: 1.5px solid var(--ink); padding: 4px 8px 6px; }
+  .feed-table td { padding: 5px 8px; border-bottom: 1px solid rgba(0,0,0,.07); vertical-align: middle; }
+  .feed-table tr:last-child td { border-bottom: none; }
+  .feed-table .feed-url { color: #888; word-break: break-all; }
+  .feed-table .feed-url a { color: inherit; text-decoration: none; }
+  .feed-table .feed-url a:hover { text-decoration: underline; }
+  .feed-table .feed-why { color: #555; font-style: italic; }
+  .feed-table .ft-edit-btn { background: none; border: 1px solid #ccc; border-radius: 2px; font-size: 10px; padding: 2px 6px; cursor: pointer; color: #888; font-family: "IBM Plex Mono", monospace; white-space: nowrap; }
+  .feed-table .ft-edit-btn:hover { border-color: var(--red); color: var(--red); }
+  .feed-table .ft-save-btn { background: var(--ink); color: var(--paper); border: none; border-radius: 2px; font-size: 10px; padding: 2px 8px; cursor: pointer; font-family: "IBM Plex Mono", monospace; }
+  .feed-table .ft-cancel-btn { background: none; border: 1px solid #ccc; border-radius: 2px; font-size: 10px; padding: 2px 6px; cursor: pointer; color: #888; font-family: "IBM Plex Mono", monospace; }
+  .feed-table input.ft-input { width: 100%; box-sizing: border-box; font-family: "IBM Plex Mono", monospace; font-size: 11px; padding: 3px 6px; border: 1.5px solid var(--ink); border-radius: 2px; background: var(--paper); color: var(--ink); }
+  .ft-btn-row { display: flex; gap: 4px; margin-top: 4px; }
+
+  footer { text-align: center; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: .1em; color: var(--ink-faint); padding: 20px 0 4px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="kicker">Health Care News · Daily Briefing</div>
+    <h1 class="title">Schaeffer Morning Desk</h1>
+    <div class="dateline">
+      <div class="dateline-left"><span style="opacity:0.35;font-size:10px;letter-spacing:.06em;">v1.0.0</span></div>
+      <div class="dateline-center"><span id="dateStr">—</span></div>
+      <div class="dateline-right" style="display:flex;gap:16px;align-items:center;">
+        <a href="https://dgtodolist.work" target="_blank" rel="noopener" style="color:inherit;opacity:0.5;text-decoration:none;font-size:inherit;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='0.5'">DirDash ↗</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <button id="refreshBtn">↻ Refresh briefing</button>
+    <button id="settingsBtn" class="ghost">⚙ Edit sources</button>
+  </div>
+
+  <div class="panel" id="panel">
+    <h3>Sources on the desk</h3>
+    <div class="chips" id="chips"></div>
+    <div class="addrow">
+      <select id="addSelect">
+        <option value="">— pick a source —</option>
+      </select>
+      <input id="addInput" placeholder="Or type a custom name" />
+      <button id="addBtn">Add</button>
+    </div>
+    <h3 style="margin-top:18px;">RSS Feed Sources</h3>
+    <table class="feed-table" id="feedTable"></table>
+  </div>
+
+  <!-- News columns -->
+  <main class="grid" id="grid"></main>
+
+  <footer>Headlines link to the source · All content from public RSS feeds · USC Schaeffer Center for Health Policy &amp; Economics</footer>
+</div>
+
+<script>
+const PAPER_CONFIG = {
+  "KFF Health News":       "https://kff.org/feed/",
+  "STAT News":             "https://www.statnews.com/feed/",
+  "Health Affairs":        "https://www.healthaffairs.org/action/showFeed?type=etoc&feed=rss&jc=hlthaff",
+  "Modern Healthcare":     "https://www.modernhealthcare.com/section/articles?format=RSS",
+  "Fierce Healthcare":     "https://www.fiercehealthcare.com/rss/xml",
+  "Politico Health":       "https://rss.politico.com/healthcare.xml",
+  "NPR Health":            "https://feeds.npr.org/1128/rss.xml",
+  "MedPage Today":         "https://www.medpagetoday.com/rss/headline.xml",
+  "BioPharma Dive":        "https://www.biopharmadive.com/feeds/news/",
+  "Reuters Health":        "https://feeds.reuters.com/reuters/healthNews",
+};
+
+const PAPER_HOME = {
+  "KFF Health News":       "https://kff.org",
+  "STAT News":             "https://www.statnews.com",
+  "Health Affairs":        "https://www.healthaffairs.org",
+  "Modern Healthcare":     "https://www.modernhealthcare.com",
+  "Fierce Healthcare":     "https://www.fiercehealthcare.com",
+  "Politico Health":       "https://www.politico.com/health-care",
+  "NPR Health":            "https://www.npr.org/sections/health-shots/",
+  "MedPage Today":         "https://www.medpagetoday.com",
+  "BioPharma Dive":        "https://www.biopharmadive.com",
+  "Reuters Health":        "https://www.reuters.com/business/healthcare-pharmaceuticals/",
+};
+
+const PAPER_FEEDS = {
+  "KFF Health News": [
+    { label: "All News",       url: "https://kff.org/feed/" },
+    { label: "Health Policy",  url: "https://kff.org/category/health-policy/feed/" },
+    { label: "Medicaid",       url: "https://kff.org/tag/medicaid/feed/" },
+    { label: "Medicare",       url: "https://kff.org/tag/medicare/feed/" },
+    { label: "ACA",            url: "https://kff.org/tag/aca/feed/" },
+  ],
+  "STAT News": [
+    { label: "All News",       url: "https://www.statnews.com/feed/" },
+    { label: "Pharma",         url: "https://www.statnews.com/category/pharma/feed/" },
+    { label: "Health Policy",  url: "https://www.statnews.com/category/health-policy/feed/" },
+    { label: "FDA",            url: "https://www.statnews.com/category/fda/feed/" },
+  ],
+  "Health Affairs": [
+    { label: "eTOC",           url: "https://www.healthaffairs.org/action/showFeed?type=etoc&feed=rss&jc=hlthaff" },
+    { label: "Blog",           url: "https://www.healthaffairs.org/do/10.1377/homewatch/rss.xml" },
+  ],
+  "Politico Health": [
+    { label: "Health Care",    url: "https://rss.politico.com/healthcare.xml" },
+    { label: "Politics",       url: "https://rss.politico.com/politics-news.xml" },
+  ],
+  "NPR Health": [
+    { label: "Health Shots",   url: "https://feeds.npr.org/1128/rss.xml" },
+    { label: "Health News",    url: "https://feeds.npr.org/1027/rss.xml" },
+  ],
+  "BioPharma Dive": [
+    { label: "All News",       url: "https://www.biopharmadive.com/feeds/news/" },
+    { label: "Drug Discovery", url: "https://www.biopharmadive.com/feeds/drug-discovery/" },
+    { label: "FDA",            url: "https://www.biopharmadive.com/feeds/fda/" },
+  ],
+};
+
+const PAPER_WHY = {
+  "KFF Health News":       "Kaiser Family Foundation — nonpartisan health policy news & analysis",
+  "STAT News":             "Authoritative health, medicine & life science journalism",
+  "Health Affairs":        "Leading peer-reviewed health policy journal",
+  "Modern Healthcare":     "Business of health care — hospitals, payers, providers",
+  "Fierce Healthcare":     "Daily health care industry news — payers, providers, tech",
+  "Politico Health":       "Health care policy & politics from Washington",
+  "NPR Health":            "NPR Health Shots — public health & medicine",
+  "MedPage Today":         "Clinical & policy news for health care professionals",
+  "BioPharma Dive":        "Pharmaceutical & biotech industry news",
+  "Reuters Health":        "Global health & pharma news from Reuters",
+};
+
+const DEFAULT_PAPERS = Object.keys(PAPER_CONFIG);
+const STORE_KEY    = "schaefferdesk:papers";
+const CACHE_KEY    = "schaefferdesk:cache";
+const OVERRIDES_KEY = "schaefferdesk:overrides";
+let papers = [...DEFAULT_PAPERS];
+let overrides = {};
+
+function loadOverrides() {
+  try { overrides = JSON.parse(localStorage.getItem(OVERRIDES_KEY) || "{}"); } catch(e) { overrides = {}; }
+}
+function saveOverrides() {
+  try { localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides)); } catch(e) {}
+}
+function displayName(key) { return overrides[key]?.displayName || key; }
+function feedUrl(key)     { return overrides[key]?.feedUrl || PAPER_CONFIG[key] || ""; }
+
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+function saveCache(items) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ date: todayStr(), items })); } catch(e) {}
+}
+function loadCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+    if (c && c.date === todayStr()) return c;
+  } catch(e) {}
+  return null;
+}
+
+document.getElementById("dateStr").textContent =
+  new Date().toLocaleDateString(undefined, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+
+function loadPapers() {
+  try {
+    const v = localStorage.getItem(STORE_KEY);
+    if (v) {
+      let a = JSON.parse(v);
+      if (Array.isArray(a) && a.length) {
+        a = a.map(name => Object.keys(PAPER_CONFIG).find(k => k.toLowerCase() === name.toLowerCase()) || name);
+        papers = a;
+        savePapers();
+      }
+    }
+  } catch(e) {}
+}
+function savePapers() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(papers)); } catch(e) {}
+}
+
+/* ---------- Rendering ---------- */
+function esc(s) { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+function colSkeleton(name) {
+  return `<h2>${esc(name)}</h2><div class="src-rule"></div>
+    ${[0,1,2].map(()=>`<div class="piece"><div class="skeleton t"></div><div class="skeleton s"></div><div class="skeleton s2"></div></div>`).join("")}`;
+}
+
+function renderItems(name, el, arr) {
+  const homeUrl = PAPER_HOME[name];
+  const label   = displayName(name);
+  const domain  = homeUrl ? new URL(homeUrl).hostname : null;
+  const logo    = domain
+    ? `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" alt="" class="src-logo" onerror="this.style.display='none'">`
+    : '';
+  const heading = homeUrl
+    ? `<h2><a href="${esc(homeUrl)}" target="_blank" rel="noopener" class="src-title-link">${logo}${esc(label)}</a></h2>`
+    : `<h2>${logo}${esc(label)}</h2>`;
+  let html = `${heading}<div class="src-rule"></div>`;
+  if (!Array.isArray(arr) || arr.length === 0) {
+    html += `<div class="status">No stories surfaced right now.</div>`;
+  } else {
+    html += arr.slice(0, 4).map(p => {
+      const link = (p.url && /^https?:\/\//.test(p.url)) ? p.url : null;
+      const title = link
+        ? `<a class="ph" href="${esc(link)}" target="_blank" rel="noopener">${esc(p.title||"Untitled")}</a>`
+        : `<span class="ph">${esc(p.title||"Untitled")}</span>`;
+      return `<div class="piece">${title}
+        ${p.author  ? `<div class="pa">${esc(p.author)}</div>` : ""}
+        ${p.summary ? `<div class="ps">${esc(p.summary)}</div>` : ""}
+        </div>`;
+    }).join("");
+  }
+  el.innerHTML = html;
+}
+
+async function fetchSource(name, el) {
+  el.innerHTML = colSkeleton(displayName(name));
+  const url = feedUrl(name);
+  if (!url) {
+    el.innerHTML = `<h2>${esc(displayName(name))}</h2><div class="src-rule"></div><div class="err">No RSS feed configured.</div>`;
+    return null;
+  }
+  try {
+    const res = await fetch("/api/rss?feed=" + encodeURIComponent(url));
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    const items = (data.items || []).slice(0, 4).map(it => ({
+      title:   it.title,
+      url:     it.link,
+      author:  it.author,
+      summary: it.description,
+    }));
+    renderItems(name, el, items);
+    return items;
+  } catch(e) {
+    el.innerHTML = `<h2>${esc(displayName(name))}</h2><div class="src-rule"></div><div class="err">Couldn't load this source.<br><span style="opacity:.6">${esc(e.message)}</span></div>`;
+    return null;
+  }
+}
+
+/* ---------- Main refresh ---------- */
+async function refreshAll() {
+  const btn = document.getElementById("refreshBtn");
+  btn.disabled = true; btn.textContent = "Loading…";
+
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  const cols = {};
+  papers.forEach(name => {
+    const div = document.createElement("div");
+    div.className = "col";
+    div.innerHTML = colSkeleton(displayName(name));
+    grid.appendChild(div);
+    cols[name] = div;
+  });
+
+  await Promise.all(papers.map(name => fetchSource(name, cols[name])));
+
+  btn.disabled = false; btn.textContent = "↻ Refresh briefing";
+}
+
+/* ---------- Settings panel ---------- */
+function renderChips() {
+  document.getElementById("chips").innerHTML = papers.map(name =>
+    `<span class="chip">${esc(displayName(name))}<button onclick="removePaper(${JSON.stringify(name)})" title="Remove">×</button></span>`
+  ).join("");
+}
+
+function renderFeedTable() {
+  const rows = papers.map(name => {
+    const url  = feedUrl(name);
+    const why  = PAPER_WHY[name] || "—";
+    const label = displayName(name);
+    const feeds = PAPER_FEEDS[name] || [];
+    const feedOptions = feeds.length
+      ? `<select class="ft-feed-select" data-key="${esc(name)}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 4px;border:1px solid #ccc;border-radius:2px;background:var(--paper);color:var(--ink);cursor:pointer;">
+           <option value="">— change feed —</option>
+           ${feeds.map(f => `<option value="${esc(f.url)}" ${f.url===url?'selected':''}>${esc(f.label)}</option>`).join("")}
+         </select>` : '';
+    return `<tr id="ftrow-${esc(name)}">
+      <td><span class="ft-name">${esc(label)}</span></td>
+      <td class="feed-url"><a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a><br>${feedOptions}</td>
+      <td class="feed-why">${esc(why)}</td>
+      <td><button class="ft-edit-btn" onclick="startEditRow(${JSON.stringify(name)})">Edit</button></td>
+    </tr>`;
+  }).join("");
+  document.getElementById("feedTable").innerHTML =
+    `<thead><tr><th>Publication</th><th>RSS Feed</th><th>Notes</th><th></th></tr></thead><tbody>${rows}</tbody>`;
+
+  document.querySelectorAll(".ft-feed-select").forEach(sel => {
+    sel.addEventListener("change", function() {
+      if (!this.value) return;
+      const key = this.dataset.key;
+      overrides[key] = { ...(overrides[key]||{}), feedUrl: this.value };
+      saveOverrides();
+      renderFeedTable();
+    });
+  });
+}
+
+function startEditRow(name) {
+  const row = document.getElementById("ftrow-" + name);
+  if (!row) return;
+  const label = displayName(name);
+  const url   = feedUrl(name);
+  row.innerHTML = `
+    <td><input class="ft-input" id="fte-name-${esc(name)}" value="${esc(label)}" style="width:130px;"></td>
+    <td colspan="2"><input class="ft-input" id="fte-url-${esc(name)}" value="${esc(url)}"></td>
+    <td>
+      <div class="ft-btn-row">
+        <button class="ft-save-btn" onclick="saveEditRow(${JSON.stringify(name)})">Save</button>
+        <button class="ft-cancel-btn" onclick="renderFeedTable()">Cancel</button>
+      </div>
+    </td>`;
+}
+
+function saveEditRow(name) {
+  const newName = document.getElementById("fte-name-" + name)?.value.trim();
+  const newUrl  = document.getElementById("fte-url-"  + name)?.value.trim();
+  if (newName || newUrl) {
+    overrides[name] = {
+      displayName: newName || displayName(name),
+      feedUrl:     newUrl  || feedUrl(name),
+    };
+    saveOverrides();
+  }
+  renderFeedTable();
+}
+
+function removePaper(name) {
+  papers = papers.filter(p => p !== name);
+  savePapers();
+  renderChips();
+  renderFeedTable();
+  renderAddSelect();
+}
+
+function renderAddSelect() {
+  const sel = document.getElementById("addSelect");
+  const available = Object.keys(PAPER_CONFIG).filter(k => !papers.includes(k));
+  sel.innerHTML = '<option value="">— pick a source —</option>' +
+    available.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join("");
+}
+
+document.getElementById("settingsBtn").addEventListener("click", () => {
+  const panel = document.getElementById("panel");
+  const open  = panel.classList.toggle("open");
+  document.getElementById("settingsBtn").textContent = open ? "✕ Close" : "⚙ Edit sources";
+  if (open) { renderChips(); renderFeedTable(); renderAddSelect(); }
+});
+
+document.getElementById("addBtn").addEventListener("click", () => {
+  const sel  = document.getElementById("addSelect");
+  const inp  = document.getElementById("addInput");
+  const name = sel.value || inp.value.trim();
+  if (!name || papers.includes(name)) return;
+  papers.push(name);
+  savePapers();
+  inp.value = ""; sel.value = "";
+  renderChips(); renderFeedTable(); renderAddSelect();
+});
+
+document.getElementById("refreshBtn").addEventListener("click", refreshAll);
+
+loadOverrides();
+loadPapers();
+refreshAll();
+</script>
+</body>
+</html>
