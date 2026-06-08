@@ -32,6 +32,8 @@ export default async (req) => {
     'www.commonwealthfund.org', 'commonwealthfund.org',
     // Managed Care Magazine
     'www.managedcaremag.com', 'managedcaremag.com',
+    // Inside Health Policy
+    'insidehealthpolicy.com', 'www.insidehealthpolicy.com',
     // The Hill Health
     'thehill.com', 'www.thehill.com',
     // AP Health
