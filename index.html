@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HPDesk v1.0.12 — health care news briefing; browser tab title "HP Desk" (spaced) -->
+<!-- HPDesk v1.0.13 — health care news briefing; browser tab title "HP Desk" (spaced) -->
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -107,9 +107,14 @@
   .panel.open { display: block; animation: rise .3s ease both; }
   .panel h3 { font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; margin: 0 0 10px; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-  .chip { display: inline-flex; align-items: center; gap: 8px; background: var(--paper); border: 1px solid var(--rule); padding: 6px 8px 6px 12px; border-radius: 20px; font-size: 14px; }
-  .chip button { background: transparent; color: var(--ink-faint); border: none; padding: 0 2px; font-size: 15px; letter-spacing: 0; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--paper); border: 1px solid var(--rule); padding: 6px 8px 6px 8px; border-radius: 20px; font-size: 14px; cursor: grab; user-select: none; }
+  .chip:active { cursor: grabbing; }
+  .chip.dragging { opacity: .4; }
+  .chip.drop-target { border-color: var(--red); box-shadow: -3px 0 0 -1px var(--red); }
+  .chip-grip { color: var(--ink-faint); font-size: 12px; line-height: 1; letter-spacing: -2px; cursor: grab; }
+  .chip button { background: transparent; color: var(--ink-faint); border: none; padding: 0 2px; font-size: 15px; letter-spacing: 0; cursor: pointer; }
   .chip button:hover { color: var(--red); }
+  .chips-hint { font-size: 11px; color: var(--ink-faint); margin: -4px 0 10px; letter-spacing: .02em; }
   .addrow { display: flex; gap: 8px; }
   .addrow input { flex: 1; font-family: "Newsreader", serif; font-size: 15px; padding: 9px 12px; border: 1.5px solid var(--ink); border-radius: 2px; background: var(--paper); color: var(--ink); }
   .addrow input:focus { outline: 2px solid var(--red); outline-offset: 1px; }
@@ -138,7 +143,7 @@
     <div class="kicker">Health Care News · Daily Briefing</div>
     <h1 class="title">Health Policy Desk</h1>
     <div class="dateline">
-      <div class="dateline-left"><span style="font-size:10px;letter-spacing:.06em;">v1.0.12</span></div>
+      <div class="dateline-left"><span style="font-size:10px;letter-spacing:.06em;">v1.0.13</span></div>
       <div class="dateline-center"><span id="dateStr">—</span></div>
       <div class="dateline-right" style="display:flex;gap:16px;align-items:center;">
         <a href="https://dgtodolist.work" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;font-size:inherit;" onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">DirDash ↗</a>
@@ -153,6 +158,7 @@
 
   <div class="panel" id="panel">
     <h3>Sources on the desk</h3>
+    <div class="chips-hint">Drag to reorder columns · × to remove</div>
     <div class="chips" id="chips"></div>
     <div class="addrow">
       <select id="addSelect">
@@ -207,8 +213,8 @@ const PAPER_FEEDS = {
     { label: "FDA",            url: "https://www.statnews.com/category/fda/feed/" },
   ],
   "Health Affairs": [
-    { label: "eTOC",           url: "https://www.healthaffairs.org/action/showFeed?type=etoc&feed=rss&jc=hlthaff" },
-    { label: "Blog",           url: "https://www.healthaffairs.org/do/10.1377/homewatch/rss.xml" },
+    { label: "eTOC",             url: "https://www.healthaffairs.org/action/showFeed?type=etoc&feed=rss&jc=hlthaff" },
+    { label: "Forefront (blog)", url: "https://news.google.com/rss/search?q=\"Health Affairs Forefront\" site:healthaffairs.org when:30d&hl=en-US&gl=US&ceid=US:en" },
   ],
   "Politico Health": [
     { label: "Health Care",    url: "https://rss.politico.com/healthcare.xml" },
@@ -242,8 +248,20 @@ const OVERRIDES_KEY = "schaefferdesk:overrides";
 let papers = [...DEFAULT_PAPERS];
 let overrides = {};
 
+// Retire feed URLs that have gone dead. If a saved per-source override still points
+// at an old URL, rewrite it so existing users don't stay stuck on a broken feed.
+const FEED_MIGRATIONS = {
+  "https://www.healthaffairs.org/do/10.1377/homewatch/rss.xml":
+    "https://news.google.com/rss/search?q=\"Health Affairs Forefront\" site:healthaffairs.org when:30d&hl=en-US&gl=US&ceid=US:en",
+};
 function loadOverrides() {
   try { overrides = JSON.parse(localStorage.getItem(OVERRIDES_KEY) || "{}"); } catch(e) { overrides = {}; }
+  let changed = false;
+  for (const k of Object.keys(overrides)) {
+    const cur = overrides[k]?.feedUrl;
+    if (cur && FEED_MIGRATIONS[cur]) { overrides[k].feedUrl = FEED_MIGRATIONS[cur]; changed = true; }
+  }
+  if (changed) saveOverrides();
 }
 function saveOverrides() {
   try { localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides)); } catch(e) {}
@@ -356,6 +374,7 @@ async function refreshAll() {
   papers.forEach(name => {
     const div = document.createElement("div");
     div.className = "col";
+    div.dataset.name = name;
     div.innerHTML = colSkeleton(displayName(name));
     grid.appendChild(div);
     cols[name] = div;
@@ -369,8 +388,39 @@ async function refreshAll() {
 /* ---------- Settings panel ---------- */
 function renderChips() {
   document.getElementById("chips").innerHTML = papers.map(name =>
-    `<span class="chip">${esc(displayName(name))}<button onclick="removePaper(${JSON.stringify(name)})" title="Remove">×</button></span>`
+    `<span class="chip" draggable="true" data-name="${esc(name)}"
+       ondragstart="chipDragStart(event)" ondragover="chipDragOver(event)"
+       ondragleave="chipDragLeave(event)" ondrop="chipDrop(event)" ondragend="chipDragEnd(event)"
+     ><span class="chip-grip" aria-hidden="true">⠿</span>${esc(displayName(name))}<button onclick="removePaper(${JSON.stringify(name)})" title="Remove">×</button></span>`
   ).join("");
+}
+
+/* Drag-to-reorder the source columns. Chips carry the order; on drop we splice
+   `papers` and re-order the existing grid columns in place (no re-fetch). */
+let _dragName = null;
+function chipDragStart(e){ _dragName = e.currentTarget.dataset.name; e.currentTarget.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", _dragName); } catch(_){} }
+function chipDragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (e.currentTarget.dataset.name !== _dragName) e.currentTarget.classList.add("drop-target"); }
+function chipDragLeave(e){ e.currentTarget.classList.remove("drop-target"); }
+function chipDragEnd(){ document.querySelectorAll(".chip").forEach(c => c.classList.remove("dragging","drop-target")); _dragName = null; }
+function chipDrop(e){
+  e.preventDefault();
+  const target = e.currentTarget.dataset.name;
+  if (!_dragName || _dragName === target) { chipDragEnd(); return; }
+  const from = papers.indexOf(_dragName), to = papers.indexOf(target);
+  if (from < 0 || to < 0) { chipDragEnd(); return; }
+  papers.splice(from, 1);
+  let at = papers.indexOf(target);
+  if (from < to) at += 1;               // moved rightward → land after the target
+  papers.splice(at, 0, _dragName);
+  chipDragEnd();
+  savePapers(); renderChips(); reorderGrid();
+}
+function reorderGrid(){
+  const grid = document.getElementById("grid");
+  papers.forEach(name => {
+    const col = grid.querySelector('.col[data-name="' + CSS.escape(name) + '"]');
+    if (col) grid.appendChild(col);      // appendChild moves the existing node → reorders
+  });
 }
 
 function renderFeedTable() {
