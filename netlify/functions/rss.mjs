@@ -14,8 +14,11 @@ export default async (req) => {
     'www.healthaffairs.org', 'healthaffairs.org',
     // Modern Healthcare
     'www.modernhealthcare.com', 'modernhealthcare.com',
-    // Fierce Healthcare
+    // Fierce Healthcare (direct feed is Cloudflare-blocked from datacenter IPs —
+    // pulled via Google News RSS instead; see news.google.com below)
     'www.fiercehealthcare.com', 'fiercehealthcare.com',
+    // Google News RSS (workaround source for Cloudflare-blocked sites)
+    'news.google.com',
     // Politico Health
     'rss.politico.com', 'www.politico.com', 'politico.com',
     // NPR Health
@@ -143,6 +146,16 @@ export default async (req) => {
           description: clean(getTag(b, 'summary') || getTag(b, 'content')),
           link: clean(link)
         });
+      }
+    }
+
+    // Google News RSS (Cloudflare-block workaround): titles carry a " - Source"
+    // suffix and the description is just a link blob, not a real summary. Trim the
+    // suffix and drop the junk description so cards read like the other feeds.
+    if (feedHost === 'news.google.com') {
+      for (const it of items) {
+        it.title = (it.title || '').replace(/\s+-\s+[^\-–—]+$/, '').trim();
+        it.description = '';
       }
     }
 
