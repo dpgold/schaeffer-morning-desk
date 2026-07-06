@@ -19,6 +19,10 @@ export default async (req) => {
     'www.fiercehealthcare.com', 'fiercehealthcare.com',
     // Google News RSS (workaround source for Cloudflare-blocked sites)
     'news.google.com',
+    // Science (AAAS) — native feed is Cloudflare-fronted; primary source is Google News
+    'www.science.org', 'science.org',
+    // NIH
+    'www.nih.gov', 'nih.gov',
     // Politico Health
     'rss.politico.com', 'www.politico.com', 'politico.com',
     // NPR Health

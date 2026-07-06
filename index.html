@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HPDesk v1.1.0 — health care news briefing; browser tab title "HP Desk" (spaced) -->
+<!-- HPDesk v1.1.1 — health care news briefing; browser tab title "HP Desk" (spaced) -->
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -143,7 +143,7 @@
     <div class="kicker">Health Care News · Daily Briefing</div>
     <h1 class="title">Health Policy Desk</h1>
     <div class="dateline">
-      <div class="dateline-left"><span style="font-size:10px;letter-spacing:.06em;">v1.1.0</span></div>
+      <div class="dateline-left"><span style="font-size:10px;letter-spacing:.06em;">v1.1.1</span></div>
       <div class="dateline-center"><span id="dateStr">—</span></div>
       <div class="dateline-right" style="display:flex;gap:16px;align-items:center;">
         <a href="https://dgtodolist.work" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;font-size:inherit;" onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">DirDash ↗</a>
@@ -186,6 +186,8 @@ const PAPER_CONFIG = {
   "Politico Health":       "https://rss.politico.com/healthcare.xml",
   "NPR Health":            "https://feeds.npr.org/1128/rss.xml",
   "Inside Health Policy":  "https://insidehealthpolicy.com/rss.xml",
+  "Science":               "https://news.google.com/rss/search?q=site:science.org/content/article when:7d&hl=en-US&gl=US&ceid=US:en",
+  "NIH":                   "https://news.google.com/rss/search?q=site:nih.gov/news-events when:14d&hl=en-US&gl=US&ceid=US:en",
 };
 
 const PAPER_HOME = {
@@ -196,6 +198,8 @@ const PAPER_HOME = {
   "Politico Health":       "https://www.politico.com/health-care",
   "NPR Health":            "https://www.npr.org/sections/health-shots/",
   "Inside Health Policy":  "https://insidehealthpolicy.com",
+  "Science":               "https://www.science.org/news",
+  "NIH":                   "https://www.nih.gov/news-events/news-releases",
 };
 
 const PAPER_FEEDS = {
@@ -229,6 +233,14 @@ const PAPER_FEEDS = {
     { label: "Drug Discovery", url: "https://www.biopharmadive.com/feeds/drug-discovery/" },
     { label: "FDA",            url: "https://www.biopharmadive.com/feeds/fda/" },
   ],
+  "Science": [
+    { label: "News (Google News)", url: "https://news.google.com/rss/search?q=site:science.org/content/article when:7d&hl=en-US&gl=US&ceid=US:en" },
+    { label: "Science.org native", url: "https://www.science.org/rss/news_current.xml" },
+  ],
+  "NIH": [
+    { label: "All News (Google)", url: "https://news.google.com/rss/search?q=site:nih.gov/news-events when:14d&hl=en-US&gl=US&ceid=US:en" },
+    { label: "News Releases",     url: "https://news.google.com/rss/search?q=site:nih.gov/news-events/news-releases when:14d&hl=en-US&gl=US&ceid=US:en" },
+  ],
 };
 
 const PAPER_WHY = {
@@ -239,6 +251,8 @@ const PAPER_WHY = {
   "Politico Health":       "Health care policy & politics from Washington",
   "NPR Health":            "NPR Health Shots — public health & medicine",
   "Inside Health Policy":  "Subscriber RSS — in-depth health policy news from Washington",
+  "Science":               "News from Science (AAAS) — research news & science policy",
+  "NIH":                   "National Institutes of Health — news releases & research updates",
 };
 
 const DEFAULT_PAPERS = Object.keys(PAPER_CONFIG);
@@ -521,6 +535,15 @@ document.getElementById("refreshBtn").addEventListener("click", refreshAll);
 
 loadOverrides();
 loadPapers();
+// One-time: add newly-shipped default sources to existing users' saved desk.
+// Guarded by a flag so if the user later removes one, it stays removed.
+(function(){
+  const K = "schaefferdesk:seed-2026-07-sci-nih";
+  if (localStorage.getItem(K)) return;
+  ["Science","NIH"].forEach(s => { if (PAPER_CONFIG[s] && !papers.includes(s)) papers.push(s); });
+  savePapers();
+  try { localStorage.setItem(K, "1"); } catch(_){}
+})();
 refreshAll();
 </script>
 </body>
