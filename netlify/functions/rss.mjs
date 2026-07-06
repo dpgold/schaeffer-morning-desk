@@ -51,13 +51,34 @@ export default async (req) => {
   }
 
   try {
+    const feedOrigin = new URL(feed).origin;
     const r = await fetch(feed, {
+      // Full browser-like header set — some sources (e.g. Fierce Healthcare, behind
+      // Cloudflare) serve a bot/challenge page to a bare UA from a datacenter IP,
+      // which has no <item> tags and parses to an empty feed.
       headers: {
-        'User-Agent': 'Mozilla/5.0',
-        'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,application/rss+xml,application/atom+xml,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': feedOrigin + '/',
+        'Upgrade-Insecure-Requests': '1',
+        'sec-ch-ua': '"Chromium";v="126", "Not.A/Brand";v="24"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
       }
     });
     const xml = await r.text();
+
+    // ?debug=1 → surface what the function actually received (status, size, first
+    // items), so a "feed returns nothing" case can be diagnosed without guessing.
+    if (url.searchParams.get('debug')) {
+      return new Response(JSON.stringify({
+        status: r.status, contentType: r.headers.get('content-type'),
+        server: r.headers.get('server'), length: xml.length,
+        itemTags: (xml.match(/<item[\s>]/g) || []).length,
+        sample: xml.slice(0, 1500),
+      }, null, 2), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
 
     const clean = s => {
       let t = (s || '');
