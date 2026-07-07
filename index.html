@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HPDesk v1.2.0 — health care news briefing; browser tab title "HP Desk" (spaced) -->
+<!-- HPDesk v1.2.1 — health care news briefing; browser tab title "HP Desk" (spaced) -->
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -143,7 +143,7 @@
     <div class="kicker">Health Care News · Daily Briefing</div>
     <h1 class="title">Health Policy Desk</h1>
     <div class="dateline">
-      <div class="dateline-left"><span style="font-size:10px;letter-spacing:.06em;">v1.2.0</span></div>
+      <div class="dateline-left"><span style="font-size:10px;letter-spacing:.06em;">v1.2.1</span></div>
       <div class="dateline-center"><span id="dateStr">—</span></div>
       <div class="dateline-right" style="display:flex;gap:16px;align-items:center;">
         <a href="https://dgtodolist.work" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;font-size:inherit;" onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">DirDash ↗</a>
@@ -188,6 +188,7 @@ const PAPER_CONFIG = {
   "Inside Health Policy":  "https://insidehealthpolicy.com/rss.xml",
   "Science":               "https://www.science.org/rss/news_current.xml",
   "NIH":                   "https://news.google.com/rss/search?q=site:nih.gov/news-events when:14d&hl=en-US&gl=US&ceid=US:en",
+  "JAMA":                  "https://jamanetwork.com/rss/site_3/onlineFirst_67.xml",
 };
 
 const PAPER_HOME = {
@@ -200,6 +201,7 @@ const PAPER_HOME = {
   "Inside Health Policy":  "https://insidehealthpolicy.com",
   "Science":               "https://www.science.org/news",
   "NIH":                   "https://www.nih.gov/news-events/news-releases",
+  "JAMA":                  "https://jamanetwork.com",
 };
 
 const PAPER_FEEDS = {
@@ -241,6 +243,11 @@ const PAPER_FEEDS = {
     { label: "All News (Google)", url: "https://news.google.com/rss/search?q=site:nih.gov/news-events when:14d&hl=en-US&gl=US&ceid=US:en" },
     { label: "News Releases",     url: "https://news.google.com/rss/search?q=site:nih.gov/news-events/news-releases when:14d&hl=en-US&gl=US&ceid=US:en" },
   ],
+  "JAMA": [
+    { label: "JAMA — Online First",  url: "https://jamanetwork.com/rss/site_3/onlineFirst_67.xml" },
+    { label: "JAMA — Current Issue", url: "https://jamanetwork.com/rss/site_3/67.xml" },
+    { label: "JAMA Network (Google News)", url: "https://news.google.com/rss/search?q=site:jamanetwork.com when:7d&hl=en-US&gl=US&ceid=US:en" },
+  ],
 };
 
 const PAPER_WHY = {
@@ -253,6 +260,7 @@ const PAPER_WHY = {
   "Inside Health Policy":  "Subscriber RSS — in-depth health policy news from Washington",
   "Science":               "News from Science (AAAS) — research news & science policy",
   "NIH":                   "National Institutes of Health — news releases & research updates",
+  "JAMA":                  "JAMA Network — latest research from JAMA & the specialty journals",
 };
 
 const DEFAULT_PAPERS = Object.keys(PAPER_CONFIG);
@@ -541,6 +549,13 @@ loadPapers();
   const K = "schaefferdesk:seed-2026-07-sci-nih";
   if (localStorage.getItem(K)) return;
   ["Science","NIH"].forEach(s => { if (PAPER_CONFIG[s] && !papers.includes(s)) papers.push(s); });
+  savePapers();
+  try { localStorage.setItem(K, "1"); } catch(_){}
+})();
+(function(){
+  const K = "schaefferdesk:seed-2026-07-jama";
+  if (localStorage.getItem(K)) return;
+  if (PAPER_CONFIG["JAMA"] && !papers.includes("JAMA")) papers.push("JAMA");
   savePapers();
   try { localStorage.setItem(K, "1"); } catch(_){}
 })();

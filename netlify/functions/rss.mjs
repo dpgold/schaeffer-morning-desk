@@ -23,6 +23,8 @@ export default async (req) => {
     'www.science.org', 'science.org',
     // NIH
     'www.nih.gov', 'nih.gov',
+    // JAMA Network (Silverchair) — native RSS; Cloudflare-fronted
+    'jamanetwork.com', 'www.jamanetwork.com',
     // Politico Health
     'rss.politico.com', 'www.politico.com', 'politico.com',
     // NPR Health
