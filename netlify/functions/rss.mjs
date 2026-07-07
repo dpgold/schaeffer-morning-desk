@@ -111,6 +111,15 @@ export default async (req) => {
       return t;
     };
 
+    // URLs must NOT be tag-stripped or truncated like descriptions — a long link
+    // (e.g. a ~300-char Google News redirect) got chopped at 220 + "…", producing
+    // a corrupt URL that 400s. Just trim and decode the entities RSS escapes in hrefs.
+    const cleanUrl = s => (s || '').trim()
+      .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+      .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(+d))
+      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+
     const getTag = (block, tag) => {
       let m = block.match(new RegExp(`<${tag}[^>]*>\\s*<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>\\s*<\\/${tag}>`));
       if (m) return m[1].trim();
@@ -133,7 +142,7 @@ export default async (req) => {
         title: clean(getTag(b, 'title')),
         author: clean(getTag(b, 'dc:creator') || getTag(b, 'author')),
         description: clean(getTag(b, 'description') || getTag(b, 'content:encoded')),
-        link: clean(link)
+        link: cleanUrl(link)
       });
     }
 
@@ -148,7 +157,7 @@ export default async (req) => {
           title: clean(getTag(b, 'title')),
           author: clean(getTag(b, 'name') || getTag(b, 'author')),
           description: clean(getTag(b, 'summary') || getTag(b, 'content')),
-          link: clean(link)
+          link: cleanUrl(link)
         });
       }
     }
